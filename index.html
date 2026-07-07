@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AXIOM — all of math, one web</title>
+</head>
+<body>
+  <canvas id="board"></canvas>
+
+  <header id="hud">
+    <div id="brand">
+      <h1>AXIOM</h1>
+      <span class="tagline">all of math, one web</span>
+    </div>
+    <nav id="tabs">
+      <button class="tab chalk-btn active" data-tab="web">WEB</button>
+      <button class="tab chalk-btn" data-tab="time">TIME</button>
+      <button id="find-btn" class="chalk-btn">FIND</button>
+    </nav>
+  </header>
+
+  <div id="find-box" class="hidden">
+    <input id="find-input" type="text" placeholder="find a topic…" autocomplete="off" spellcheck="false" />
+    <div id="find-results"></div>
+  </div>
+
+  <div id="lit-count"></div>
+  <div id="hint">drag to fly · scroll to zoom · click anything</div>
+
+  <aside id="panel" class="hidden"></aside>
+
+  <div id="timebar" class="hidden">
+    <button id="time-play" class="chalk-btn">PLAY</button>
+    <div id="time-track">
+      <div id="time-eras"></div>
+      <div id="time-cursor"></div>
+    </div>
+    <div id="time-year">1700</div>
+  </div>
+
+  <div id="intro">
+    <div id="intro-inner">
+      <h1>AXIOM</h1>
+      <p>all of math, one web</p>
+      <button id="enter-btn" class="chalk-btn big">ENTER</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
