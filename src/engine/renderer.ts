@@ -97,6 +97,9 @@ export class Renderer {
 
     camera.applyTo(ctx, dpr)
 
+    // ambient chalk dust, under the web (skip in timeline for clarity)
+    if (rc.mode === 'web') this.effects.drawAmbient(ctx, this.time)
+
     // viewport in world coords (+margin)
     const tl = camera.screenToWorld(0, 0)
     const br = camera.screenToWorld(w, h)
@@ -118,10 +121,10 @@ export class Renderer {
     if (blAlpha > 0.02 && rc.introT > 2) {
       ctx.save()
       ctx.fillStyle = CHALK
-      ctx.globalAlpha = 0.34 * blAlpha * Math.min(1, (rc.introT - 2) / 1.5)
+      ctx.globalAlpha = 0.42 * blAlpha * Math.min(1, (rc.introT - 2) / 1.5)
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.font = `600 92px Caveat, cursive`
+      ctx.font = `600 118px Caveat, cursive`
       for (const bl of this.layout.branchLabels) {
         if (!inView(bl.x, bl.y, 400)) continue
         ctx.save()
@@ -145,6 +148,32 @@ export class Renderer {
       for (const p of this.layout.people.values()) {
         if (!inView(p.x, p.y, 140)) continue
         this.drawPerson(p, rc, veil, z)
+      }
+    }
+
+    // selected or hovered mathematician: dotted gold threads to their topics
+    const personId = rc.selected && this.layout.people.has(rc.selected)
+      ? rc.selected
+      : (rc.hovered && this.layout.people.has(rc.hovered) ? rc.hovered : null)
+    if (personId) {
+      const sp = this.layout.people.get(personId)
+      if (sp) {
+        ctx.save()
+        ctx.strokeStyle = GOLD
+        ctx.lineCap = 'round'
+        ctx.setLineDash([3, 10])
+        ctx.lineDashOffset = -this.time * 18
+        ctx.lineWidth = 1.8
+        ctx.globalAlpha = 0.55
+        for (const tid of sp.person.near) {
+          const t = this.layout.nodes.get(tid)
+          if (!t) continue
+          ctx.beginPath()
+          ctx.moveTo(sp.x, sp.y)
+          ctx.lineTo(t.x, t.y)
+          ctx.stroke()
+        }
+        ctx.restore()
       }
     }
 
@@ -208,8 +237,10 @@ export class Renderer {
       return
     }
 
+    const wb = Math.max(1, 0.5 / z) // keep strands ~a screen pixel at any zoom
+
     if (aM && bM) {
-      strokePolyline(ctx, e.pts, { color, width: 2.6, alpha: 0.62 * veil, progress: prog, single: z < 0.25 })
+      strokePolyline(ctx, e.pts, { color, width: 2.6 * wb, alpha: 0.62 * veil, progress: prog, single: z < 0.25 })
       if (z > 0.25) strokePolyline(ctx, e.pts, { color, width: 7, alpha: 0.1 * veil, progress: prog, single: true })
     } else if (aM || bM) {
       // half-lit: color bleeds from the mastered end
@@ -223,7 +254,7 @@ export class Renderer {
       ctx.strokeStyle = g
       ctx.lineCap = 'round'
       ctx.globalAlpha = 0.42 * veil
-      ctx.lineWidth = 2.2
+      ctx.lineWidth = 2.2 * wb
       ctx.beginPath()
       ctx.moveTo(e.pts[0].x, e.pts[0].y)
       const last = prog >= 1 ? e.pts.length - 1 : Math.max(1, Math.floor((e.pts.length - 1) * prog))
@@ -231,7 +262,12 @@ export class Renderer {
       ctx.stroke()
       ctx.restore()
     } else {
-      strokePolyline(ctx, e.pts, { color: CHALK, width: 1.7, alpha: 0.19 * veil, progress: prog, single: z < 0.3 })
+      // long / cross-branch strands recede so each branch reads as its own
+      // island in the overview and neighbourhoods stay legible up close
+      const lf = e.len > 1600 ? 0.45 : e.len > 1000 ? 0.7 : 1
+      const crossBranch = na.node.branch !== nb.node.branch
+      const cf = crossBranch ? (z < 0.25 ? 0.32 : 0.6) : 1
+      strokePolyline(ctx, e.pts, { color: CHALK, width: 1.7 * wb, alpha: 0.26 * lf * cf * veil, progress: prog, single: z < 0.3 })
     }
   }
 
@@ -293,9 +329,17 @@ export class Renderer {
       ctx.stroke()
       ctx.restore()
     } else {
+      const wb = Math.max(1, 0.45 / z)
+      if (n.tier === 0) {
+        // the origin beacon — Counting glows warm even unlit
+        const g = this.glow(GOLD)
+        ctx.globalAlpha = 0.35 * dim * (1 + Math.sin(this.time * 1.2) * 0.15)
+        ctx.drawImage(g, l.x - r * 3, l.y - r * 3, r * 6, r * 6)
+        ctx.globalAlpha = dim
+      }
       chalkCircle(ctx, l.x, l.y, r, {
-        seed, color: CHALK, width: n.tier === 0 ? 3 : 2,
-        alpha: (isHover ? 0.95 : 0.6) * dim,
+        seed, color: n.tier === 0 ? GOLD : CHALK, width: (n.tier === 0 ? 3 : 2) * wb,
+        alpha: (isHover ? 0.95 : n.tier === 0 ? 0.85 : 0.6) * dim,
         fill: '#13201a', fillAlpha: 0.85,
       })
     }

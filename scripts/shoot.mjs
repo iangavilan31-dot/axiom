@@ -20,16 +20,29 @@ mkdirSync('docs/shots', { recursive: true })
 
 const browser = await chromium.launch({ headless: false, args: [`--window-size=${W},${H + 90}`] })
 const page = await browser.newPage({ viewport: { width: W, height: H } })
+
+// optional pre-seed of mastered nodes: SEED='id1,id2,...' node scripts/shoot.mjs ...
+if (process.env.SEED) {
+  await page.addInitScript(seed => {
+    localStorage.setItem('axiom-progress-v1', JSON.stringify(seed.split(',')))
+  }, process.env.SEED)
+}
+
 await page.goto('http://localhost:5127', { waitUntil: 'networkidle' })
 await page.waitForTimeout(800)
 
 for (const raw of steps.split(';')) {
   const s = raw.trim()
   if (!s) continue
-  const [cmd, argStr] = s.split(':')
-  const args = (argStr ?? '').split(',').map(a => a.trim())
+  const ci = s.indexOf(':')
+  const cmd = ci < 0 ? s : s.slice(0, ci)
+  const argStr = ci < 0 ? '' : s.slice(ci + 1)
+  const args = argStr.split(',').map(a => a.trim())
   if (cmd === 'enter') {
-    await page.click('#enter-btn') // real click on the visible button
+    // genuine pixel click at the button's real centre (hit-tested by the browser)
+    const box = await page.locator('#enter-btn').boundingBox()
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+    await page.waitForTimeout(200)
   } else if (cmd === 'wait') {
     await page.waitForTimeout(Number(args[0]))
   } else if (cmd === 'shot') {
@@ -63,6 +76,12 @@ for (const raw of steps.split(';')) {
     await page.click(`#tabs .tab[data-tab="${args[0]}"]`)
   } else if (cmd === 'key') {
     await page.keyboard.press(args[0])
+  } else if (cmd === 'dom') {
+    await page.click(argStr.trim()) // real click on a DOM element by selector
+  } else if (cmd === 'type') {
+    await page.keyboard.type(argStr.trim())
+  } else if (cmd === 'eval') {
+    console.log('eval →', JSON.stringify(await page.evaluate(argStr.trim())))
   }
 }
 

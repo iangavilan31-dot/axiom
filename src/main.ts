@@ -274,17 +274,24 @@ window.addEventListener('keydown', e => {
 })
 
 // ---------- intro ----------
+// The board is already fully drawn and softly drifting behind a translucent
+// title card — ENTER dives you in rather than revealing from black.
 
-let introStart = -1
+let entered = false
+rc.introT = Infinity
+{
+  const fz = fitZoom()
+  camera.x = 0; camera.y = 0; camera.z = fz * 0.82
+}
 $('#enter-btn').addEventListener('click', () => {
+  if (entered) return
+  entered = true
   initAudio()
   thump()
   $('#intro').classList.add('fading')
-  setTimeout(() => $('#intro').classList.add('hidden'), 1100)
-  introStart = performance.now()
+  setTimeout(() => $('#intro').classList.add('hidden'), 1000)
   const fz = fitZoom()
-  camera.x = 0; camera.y = 0; camera.z = fz * 2.1
-  camera.flyTo(0, 0, fz, 4.2)
+  camera.flyTo(0, 0, fz * 1.28, 2.4)
 })
 
 // ---------- loop ----------
@@ -296,9 +303,11 @@ let last = performance.now()
 function frame(now: number): void {
   const dt = Math.min(0.05, (now - last) / 1000)
   last = now
-  if (introStart >= 0 && rc.introT !== Infinity) {
-    rc.introT = (now - introStart) / 1000
-    if (rc.introT > 8) rc.introT = Infinity
+  // gentle idle drift while the title card is up
+  if (!entered && !camera.flying) {
+    const t = now / 1000
+    camera.x = Math.sin(t * 0.12) * 90
+    camera.y = Math.cos(t * 0.09) * 70
   }
   camera.update(dt)
   effects.update(dt)
@@ -310,3 +319,7 @@ function frame(now: number): void {
 
 // wait for the chalk fonts so canvas text renders in Caveat, not Times
 document.fonts.ready.then(() => requestAnimationFrame(frame))
+
+if (import.meta.env.DEV) {
+  ;(window as any).__axiom = { rc, timeline, camera, layout }
+}

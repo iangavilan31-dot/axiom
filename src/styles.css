@@ -317,11 +317,17 @@ html, body {
   position: fixed; inset: 0;
   z-index: 50;
   display: grid; place-items: center;
-  background: radial-gradient(ellipse at center, #182620 0%, #0c1410 70%);
+  background: radial-gradient(ellipse at center, rgba(18, 28, 22, 0.62) 0%, rgba(9, 15, 12, 0.86) 72%);
+  backdrop-filter: blur(2px);
   transition: opacity 1s ease;
 }
 #intro.fading { opacity: 0; pointer-events: none; }
-#intro-inner { text-align: center; }
+#intro-inner {
+  text-align: center;
+  padding: 40px 64px 48px;
+  border-radius: 300px 24px 280px 24px / 24px 280px 24px 300px;
+  background: radial-gradient(ellipse at center, rgba(9, 15, 12, 0.55) 0%, rgba(9, 15, 12, 0) 75%);
+}
 #intro h1 {
   font-family: 'Caveat', cursive;
   font-weight: 700;

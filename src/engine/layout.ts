@@ -12,6 +12,7 @@ export interface LaidEdge {
   pts: { x: number; y: number }[]
   ax: number; ay: number; bx: number; by: number
   minX: number; minY: number; maxX: number; maxY: number
+  len: number
 }
 export interface BranchLabel { branch: BranchId; name: string; x: number; y: number; rot: number }
 
@@ -24,25 +25,25 @@ export interface WebLayout {
   bounds: { minX: number; minY: number; maxX: number; maxY: number }
 }
 
-const R0 = 120
-const TIER_R = 150
+const R0 = 150
+const TIER_R = 170
 export const radiusOfTier = (tier: number): number => (tier <= 0 ? 0 : R0 + tier * TIER_R)
 
-/** angular sector per branch, degrees. null = special placement. */
+/** angular sector per branch, degrees (width ∝ node count). null = special placement. */
 const SECTORS: Record<BranchId, [number, number] | null> = {
   arithmetic: null,           // golden-angle spiral around the core
-  algebra: [0, 36],
-  'number-theory': [36, 66],
-  discrete: [66, 94],
-  logic: [94, 128],
-  probability: [128, 162],
-  'linear-algebra': [162, 188],
-  calculus: [188, 224],
-  analysis: [224, 254],
-  topology: [254, 278],
-  'abstract-algebra': [278, 304],
-  geometry: [304, 338],
-  trigonometry: [338, 360],
+  algebra: [0, 38],
+  'number-theory': [38, 70],
+  discrete: [70, 99],
+  logic: [99, 123],
+  probability: [123, 160],
+  'linear-algebra': [160, 186],
+  calculus: [186, 222],
+  analysis: [222, 252],
+  topology: [252, 272],
+  'abstract-algebra': [272, 296],
+  geometry: [296, 340],
+  trigonometry: [340, 360],
   frontier: null,             // rides the angle of its primary prereq, outer rim
 }
 
@@ -108,7 +109,7 @@ export function layoutWeb(topics: TopicNode[], people: Person[], branchNames: Re
         const A = all[i], B = all[j]
         const dx = B.x - A.x, dy = B.y - A.y
         const d = Math.hypot(dx, dy)
-        const min = 92
+        const min = 104
         if (d > 0.01 && d < min) {
           const push = (min - d) / 2 / d
           A.x -= dx * push; A.y -= dy * push
@@ -162,7 +163,7 @@ export function layoutWeb(topics: TopicNode[], people: Person[], branchNames: Re
         if (q.x < minX) minX = q.x; if (q.x > maxX) maxX = q.x
         if (q.y < minY) minY = q.y; if (q.y > maxY) maxY = q.y
       }
-      const e: LaidEdge = { a: pid, b: n.id, key, pts, ax: from.x, ay: from.y, bx: to.x, by: to.y, minX, minY, maxX, maxY }
+      const e: LaidEdge = { a: pid, b: n.id, key, pts, ax: from.x, ay: from.y, bx: to.x, by: to.y, minX, minY, maxX, maxY, len }
       edges.push(e)
       if (!edgesByNode.has(pid)) edgesByNode.set(pid, [])
       if (!edgesByNode.has(n.id)) edgesByNode.set(n.id, [])

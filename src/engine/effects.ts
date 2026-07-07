@@ -7,11 +7,29 @@ interface Bloom { x: number; y: number; color: string; t: number; dur: number }
 interface Pulse { edge: LaidEdge; fromA: boolean; color: string; t: number; dur: number }
 interface Dust { x: number; y: number; vx: number; vy: number; t: number; life: number; size: number; color: string }
 
+interface Mote { x: number; y: number; drift: number; phase: number; size: number; a: number }
+
 export class Effects {
   private blooms: Bloom[] = []
   private pulses: Pulse[] = []
   private dust: Dust[] = []
+  private motes: Mote[] = []
   private rnd = srand(12345)
+
+  constructor() {
+    // ambient chalk dust hanging in the air, seeded across the whole board
+    const r = srand(777)
+    for (let i = 0; i < 140; i++) {
+      this.motes.push({
+        x: (r() - 0.5) * 4200,
+        y: (r() - 0.5) * 4200,
+        drift: 4 + r() * 10,
+        phase: r() * Math.PI * 2,
+        size: 0.8 + r() * 1.8,
+        a: 0.05 + r() * 0.16,
+      })
+    }
+  }
 
   addBloom(x: number, y: number, color: string): void {
     this.blooms.push({ x, y, color, t: 0, dur: 0.9 })
@@ -49,6 +67,21 @@ export class Effects {
       d.vy *= Math.pow(0.1, dt)
     }
     this.dust = this.dust.filter(d => d.t < d.life)
+  }
+
+  /** ambient motes drawn UNDER everything (call at frame start, in world space) */
+  drawAmbient(ctx: CanvasRenderingContext2D, time: number): void {
+    ctx.save()
+    ctx.fillStyle = '#e9e4d4'
+    for (const m of this.motes) {
+      const sway = Math.sin(time * 0.3 + m.phase) * m.drift
+      const bob = Math.cos(time * 0.22 + m.phase * 1.7) * m.drift * 0.6
+      ctx.globalAlpha = m.a * (0.6 + 0.4 * Math.sin(time * 0.8 + m.phase))
+      ctx.beginPath()
+      ctx.arc(m.x + sway, m.y + bob, m.size, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.restore()
   }
 
   draw(ctx: CanvasRenderingContext2D, time: number): void {
