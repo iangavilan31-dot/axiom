@@ -10,6 +10,7 @@ import { Progress } from './state/progress'
 import { Panel } from './ui/panel'
 import { Timeline } from './ui/timeline'
 import { chime, initAudio, thump, tick } from './engine/audio'
+import { SatMode } from './sat/sat'
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string): T => document.querySelector(sel) as T
 
@@ -191,11 +192,26 @@ const timeline = new Timeline(
   },
 )
 
-function setTab(tab: 'web' | 'time'): void {
-  rc.mode = tab
+const sat = new SatMode()
+sat.mount(document.body)
+let satActive = false
+
+function setTab(tab: 'web' | 'time' | 'sat'): void {
   document.querySelectorAll('#tabs .tab').forEach(b => {
     b.classList.toggle('active', (b as HTMLElement).dataset.tab === tab)
   })
+  satActive = tab === 'sat'
+  document.body.classList.toggle('sat-active', satActive)
+  if (satActive) {
+    initAudio()
+    clearSelection()
+    clearPath()
+    timeline.setVisible(false)
+    sat.show()
+    return
+  }
+  sat.hide()
+  rc.mode = tab === 'time' ? 'time' : 'web'
   timeline.setVisible(tab === 'time')
   if (tab === 'time') {
     clearSelection()
@@ -206,7 +222,7 @@ function setTab(tab: 'web' | 'time'): void {
   }
 }
 document.querySelectorAll('#tabs .tab').forEach(b => {
-  b.addEventListener('click', () => setTab((b as HTMLElement).dataset.tab as 'web' | 'time'))
+  b.addEventListener('click', () => setTab((b as HTMLElement).dataset.tab as 'web' | 'time' | 'sat'))
 })
 
 // ---------- find ----------
@@ -309,11 +325,13 @@ function frame(now: number): void {
     camera.x = Math.sin(t * 0.12) * 90
     camera.y = Math.cos(t * 0.09) * 70
   }
-  camera.update(dt)
-  effects.update(dt)
-  timeline.update(dt)
-  if (rc.mode === 'time') rc.timelineYear = timeline.year
-  renderer.render(dt, rc)
+  if (!satActive) {
+    camera.update(dt)
+    effects.update(dt)
+    timeline.update(dt)
+    if (rc.mode === 'time') rc.timelineYear = timeline.year
+    renderer.render(dt, rc)
+  }
   requestAnimationFrame(frame)
 }
 

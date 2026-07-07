@@ -12,6 +12,11 @@ All 12 build tasks done. Blind critics **88/100** (`docs/GRADES.md`), clears the
 - 5 signature features all real-click verified: self-mark ignite + colour-spread + localStorage; edge-click "why they connect" chalk animations (bespoke + generic); show-me-the-path glowing prereq chain; mathematician medallions with gold threads; scrubbable history-timeline tab.
 - Dive-in hero intro, ambient chalk dust, procedural audio. Single-file offline build verified opening from disk with zero errors.
 
+## SAT MATH mode (added same session, 2026-07-07)
+Engagement-optimized SAT prep, research-grounded (`docs/ENGAGEMENT.md`). A **SAT tab** takes over: solve real SAT problems (retrieval practice) to light a **28-skill graph** across the 4 College Board domains; **score-ring projects toward 800**; streak flame + XP + self-set daily goal; misses feed a **spaced-repetition review queue**; **Mixed Module** = interleaved test-like set. Celebrations on skill/domain clear + "800 READY". All localStorage-persisted. Real-click verified end-to-end.
+- Lives in `src/sat/`: `data.ts` (28 skills / 66 problems, MC + grid-in, lenient matching), `state.ts` (mastery/streak/xp/daily/review persistence), `sat.ts` (controller: HUD + SVG chalk skill-map + practice engine + celebrations), `sat.css`.
+- Wiring: floating nav (`#tabs`, z-48) always clickable above the SAT screen; `body.sat-active` hides web chrome; main loop pauses the canvas render while SAT is active.
+
 ## Architecture (where things live)
 - `src/engine/` — chalk.ts (stroke primitives), camera.ts, layout.ts (radial web), renderer.ts, input.ts (hit-testing), effects.ts (blooms/dust), audio.ts
 - `src/data/branches/*.ts` — one file per branch; `data/people.ts`; `data/index.ts` aggregates + dev-validates prereqs

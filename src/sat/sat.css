@@ -1,0 +1,156 @@
+/* ---------- SAT MODE ---------- */
+
+#sat-screen {
+  position: fixed; inset: 0;
+  z-index: 30;
+  background: radial-gradient(ellipse at 50% 30%, #182620 0%, #0c1410 78%);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* HUD */
+#sat-hud {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px;
+  padding: 54px 26px 12px; /* clear the floating nav (z-48, top-right) */
+  flex: 0 0 auto;
+}
+#sat-title h2 {
+  font-family: 'Caveat', cursive; font-weight: 700; font-size: 40px; line-height: 0.9;
+  transform: rotate(-1.5deg);
+  text-shadow: 0 0 18px rgba(233,228,212,.22);
+}
+#sat-title p { font-size: 15px; color: var(--chalk-dim); margin-top: 2px; }
+
+#sat-stats { display: flex; align-items: center; gap: 22px; }
+.sat-stat { text-align: center; font-family: 'Caveat', cursive; }
+.sat-stat .val { font-size: 32px; font-weight: 700; line-height: 1; }
+.sat-stat .lbl { font-size: 14px; color: var(--chalk-dim); letter-spacing: .04em; }
+.sat-stat.streak .val { color: #ff9558; }
+.sat-stat.xp .val { color: #7bd88f; }
+
+/* score ring */
+#sat-ring { position: relative; width: 128px; height: 128px; }
+#sat-ring svg { transform: rotate(-90deg); }
+#sat-ring .score {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: 'Caveat', cursive; text-align: center;
+}
+#sat-ring .score b { display: block; font-size: 40px; font-weight: 700; line-height: .9; color: #ffd166; }
+#sat-ring .score span { font-size: 13px; color: var(--chalk-dim); }
+
+/* domain bars + actions */
+#sat-subbar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 0 26px 10px;
+  flex: 0 0 auto;
+}
+.dom-bar { flex: 1 1 160px; min-width: 150px; }
+.dom-bar .top { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 3px; }
+.dom-bar .top .n { color: var(--chalk); font-family: 'Caveat', cursive; font-size: 18px; }
+.dom-bar .top .c { color: var(--chalk-dim); }
+.dom-bar .track { height: 8px; border-radius: 6px; background: rgba(233,228,212,.12); overflow: hidden; }
+.dom-bar .fill { height: 100%; border-radius: 6px; transition: width .5s cubic-bezier(.2,.8,.2,1); }
+
+#sat-actions { display: flex; gap: 10px; margin-left: auto; }
+
+/* skill map */
+#sat-map-wrap { flex: 1 1 auto; position: relative; overflow: hidden; }
+#sat-map { width: 100%; height: 100%; display: block; }
+.skill-node { cursor: pointer; }
+.skill-node circle.hit { fill: transparent; }
+.skill-node .ring { transition: all .35s ease; }
+.skill-node text {
+  font-family: 'Caveat', cursive; fill: var(--chalk); text-anchor: middle;
+  pointer-events: none; font-size: 17px;
+}
+.skill-node .prog { font-size: 13px; fill: var(--chalk-dim); }
+.skill-node:hover .ring { stroke-width: 3.5; }
+.dom-label {
+  font-family: 'Caveat', cursive; font-weight: 700; text-anchor: middle;
+  opacity: .5; pointer-events: none;
+}
+
+/* practice modal */
+#sat-modal {
+  position: fixed; inset: 0; z-index: 52; /* above the floating nav while solving */
+  display: grid; place-items: center;
+  background: rgba(6, 11, 8, 0.72); backdrop-filter: blur(3px);
+}
+#sat-card {
+  width: min(560px, calc(100vw - 36px));
+  max-height: calc(100vh - 60px); overflow-y: auto;
+  border: 2px solid var(--frame);
+  border-radius: 32px 8px 30px 8px / 8px 30px 8px 32px;
+  background: rgba(12, 20, 16, 0.96);
+  padding: 22px 26px 24px;
+  scrollbar-width: thin; scrollbar-color: rgba(233,228,212,.3) transparent;
+}
+#sat-card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+#sat-card .chip {
+  font-size: 14px; letter-spacing: .06em; padding: 1px 12px 3px;
+  border: 1.5px solid; border-radius: 200px 12px 180px 12px / 12px 180px 12px 200px;
+  transform: rotate(-1deg);
+}
+#sat-card .close { font-family: 'Caveat', cursive; font-size: 28px; color: var(--chalk-dim); background: none; border: none; cursor: pointer; line-height: 1; }
+#sat-card .close:hover { color: var(--chalk); }
+#sat-card h3 { font-family: 'Caveat', cursive; font-size: 30px; font-weight: 700; line-height: 1; margin: 2px 0 4px; }
+#sat-card .counter { font-size: 14px; color: var(--chalk-dim); margin-bottom: 14px; }
+#sat-card .dots { display: inline-flex; gap: 5px; margin-left: 8px; }
+#sat-card .dots i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--chalk-faint); display: inline-block; }
+#sat-card .dots i.done { background: #7bd88f; border-color: #7bd88f; }
+#sat-card .dots i.cur { border-color: #ffd166; }
+
+#sat-card .q { font-size: 20px; line-height: 1.45; margin-bottom: 16px; }
+#sat-choices { display: flex; flex-direction: column; gap: 9px; }
+.choice {
+  text-align: left; font-family: 'Patrick Hand', cursive; font-size: 18px;
+  color: var(--chalk); background: rgba(233,228,212,.04);
+  border: 2px solid var(--chalk-faint); border-radius: 16px 6px 16px 6px / 6px 16px 6px 16px;
+  padding: 9px 14px; cursor: pointer; transition: all .12s ease;
+  display: flex; gap: 10px; align-items: baseline;
+}
+.choice .k { font-family: 'Caveat', cursive; font-weight: 700; color: var(--chalk-dim); }
+.choice:hover:not(:disabled) { border-color: var(--chalk); transform: translateX(2px); }
+.choice.correct { border-color: #7bd88f; background: rgba(123,216,143,.14); }
+.choice.wrong { border-color: #ff6b5e; background: rgba(255,107,94,.12); }
+.choice:disabled { cursor: default; }
+
+#sat-grid { display: flex; gap: 10px; }
+#sat-grid input {
+  flex: 1; background: rgba(233,228,212,.05); border: 2px solid var(--chalk-faint);
+  border-radius: 14px; color: var(--chalk); font-family: 'Patrick Hand', cursive; font-size: 20px;
+  padding: 8px 14px; outline: none;
+}
+#sat-grid input:focus { border-color: var(--chalk); }
+
+#sat-feedback { margin-top: 16px; }
+#sat-feedback .verdict { font-family: 'Caveat', cursive; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+#sat-feedback .verdict.good { color: #7bd88f; }
+#sat-feedback .verdict.bad { color: #ff6b5e; }
+#sat-feedback .sol {
+  font-size: 16.5px; line-height: 1.5; color: var(--chalk);
+  border-left: 2px dashed var(--chalk-faint); padding-left: 12px; margin-bottom: 14px;
+}
+#sat-card .btnrow { display: flex; gap: 10px; margin-top: 14px; }
+
+/* celebration burst */
+#sat-cheer {
+  position: fixed; inset: 0; z-index: 58; pointer-events: none;
+  display: grid; place-items: center;
+}
+#sat-cheer .banner {
+  font-family: 'Caveat', cursive; font-weight: 700; text-align: center;
+  color: #ffd166; text-shadow: 0 0 40px rgba(255,209,102,.55);
+  animation: cheerpop .5s cubic-bezier(.2,1.4,.4,1);
+}
+#sat-cheer .banner .big { font-size: clamp(52px, 9vw, 104px); line-height: .95; }
+#sat-cheer .banner .sub { font-size: clamp(20px, 3vw, 30px); color: var(--chalk); }
+@keyframes cheerpop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+@media (max-width: 720px) {
+  #sat-hud { flex-wrap: wrap; }
+  #sat-title h2 { font-size: 30px; }
+  #sat-ring { width: 104px; height: 104px; }
+  .dom-bar { flex-basis: 46%; }
+}

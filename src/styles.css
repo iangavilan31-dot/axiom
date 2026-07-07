@@ -84,7 +84,20 @@ html, body {
   margin-left: 4px;
 }
 
-#tabs { display: flex; gap: 10px; }
+/* nav floats above every screen (incl. the SAT takeover) so tabs always work */
+#tabs {
+  position: fixed; top: 18px; right: 24px;
+  display: flex; gap: 10px;
+  z-index: 48;
+}
+
+/* SAT takeover hides the web-only chrome */
+body.sat-active #brand,
+body.sat-active #lit-count,
+body.sat-active #hint,
+body.sat-active #find-btn,
+body.sat-active #find-box,
+body.sat-active #panel { display: none !important; }
 
 #lit-count {
   position: fixed; left: 24px; bottom: 20px;
